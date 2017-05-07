@@ -28,6 +28,8 @@ https://little-url.herokuapp.com/new/https://www.google.com
 //url path > short url > redirects to th original url
 https://little-url.herokuapp.com/5576
 */
+
+var path    = require("path");
 var express = require("express");
 var app     = express();
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -70,7 +72,7 @@ function findDocumentByOriginalURL(original_url, callback ){
         {},
         function(err, foundDocument){
             if(err){console.error(err)};
-            console.log(JSON.stringify(foundDocument));
+            //console.log(JSON.stringify(foundDocument));
             callback(foundDocument);
             db.close();            
         })
@@ -104,7 +106,7 @@ function countDocuments(callback){
             if(count == null){
                 count= 0;
             }
-            console.log((count));
+            //console.log((count));
 
             callback(count);
             db.close();
@@ -121,32 +123,33 @@ app.get( (newUrlPath + "*"), function(req, res){
     var url = req.url.slice(newUrlPath.length);
 
     if((url.match("http://") ) || (url.match("https://") ) ){
-        var message = url;
-        //console.log(message);
-        //res.write(message);
+        //var message = url;
+
         findDocumentByOriginalURL(url, function (foundDocument){
             if(foundDocument != null){
-                console.log(foundDocument);
+                //console.log(foundDocument);
                 res.write(  JSON.stringify(foundDocument) );
                 res.end();
             }else{
+                //Count the documents
                 countDocuments(function(count){
                     var newDoc = {
                         original_url: url,
                         short_url: (count +1)
-                    }
+                    };
+                    //Add the new document
                     addDocument(newDoc);
-                //});
-                findDocumentByOriginalURL(url, function (foundDocument){
-                    if(foundDocument != null){
-                        console.log(foundDocument);
-                        res.write(  JSON.stringify(foundDocument) );
-                        res.end();            
-                    }else{
-                        res.write("Unable to add document");
-                        res.end();
-                    }
-                });
+                    //show the new document
+                    findDocumentByOriginalURL(url, function (foundDocument){
+                        if(foundDocument != null){
+                            //console.log(foundDocument);
+                            res.write(  JSON.stringify(foundDocument) );
+                            res.end();            
+                        }else{
+                            res.write("Unable to add document");
+                            res.end();
+                        }
+                    });
                 });
             }
         });
@@ -190,13 +193,20 @@ https://little-url.herokuapp.com/5576
 var rootUrlPath = "/";
 app.get((rootUrlPath + "*"), function(req, res){
     var short_url = Number.parseInt(req.url.slice(rootUrlPath.length)) ;
-    console.log(short_url );
+    //console.log(short_url );
     findDocumentByShortURL(short_url, function(documents){
         if(documents.length > 0){
-            console.log(documents[1]);
-            res.write( JSON.stringify(documents[0]) );
+            //console.log(documents[0]);
+            //res.write( JSON.stringify(documents[0]) );
+
+            app.set('views', path.join(__dirname, 'server/templates' ))
+            app.set('view engine', 'jade');
+            var original_url= documents[0].original_url;
+            res.render('redirect', {redirectUrl: original_url });
+
+
             //res.write("web server running");
-            res.end();
+            //res.end();
         }else{
             console.log("no short url found");
             res.write("no short url found" );

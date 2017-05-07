@@ -52,15 +52,15 @@ function addDocument(document){
             {},
             function(err, document){
                 if(err){console.error(err)};
-                console.log(JSON.stringify(document));
+                //console.log(JSON.stringify(document));
                 db.close();            
             })
         });
     })
 }
 
-
-function findDocumentByOriginalURL(original_url){
+//
+function findDocumentByOriginalURL(original_url, callback ){
     mongo.connect(mongoUrl, function(err, db){
         if(err){console.error(err)};
         var collection = db.collection(mongoCollectionName);
@@ -71,6 +71,7 @@ function findDocumentByOriginalURL(original_url){
         function(err, foundDocument){
             if(err){console.error(err)};
             console.log(JSON.stringify(foundDocument));
+            callback(foundDocument);
             db.close();            
         })
     });
@@ -86,42 +87,105 @@ function findDocumentByShortURL(short_url, callback){
         function(err, documents){
             if(err){console.error(err)};
             //console.log(JSON.stringify(documents));
-            callback((documents)) ;
-
+            callback(documents);
             db.close();
-
         });
     });
 }
 
 
+function countDocuments(callback){
+    mongo.connect(mongoUrl, function(err, db ){
+        if(err){console.error(err)};
+        var collection = db.collection(mongoCollectionName);
+        collection.count({}
+        , function(err, count){
+            if(err){console.error(err)};
+            if(count == null){
+                count= 0;
+            }
+            console.log((count));
+
+            callback(count);
+            db.close();
+            //return count;
+        });
+    });
+}
+
+
+
 var newUrlPath = "/new/";
 app.get( (newUrlPath + "*"), function(req, res){
-    res.write("new page \n");
-
+    //res.write("new page \n");
     var url = req.url.slice(newUrlPath.length);
 
     if((url.match("http://") ) || (url.match("https://") ) ){
         var message = url;
-        console.log(message);
-        res.write(message);
-
-        findDocumentByOriginalURL(url);
-
-        var newDoc = {
-            original_url: url,
-            short_url: 1
-        }
-
-        addDocument(newDoc);
-
+        //console.log(message);
+        //res.write(message);
+        findDocumentByOriginalURL(url, function (foundDocument){
+            if(foundDocument != null){
+                console.log(foundDocument);
+                res.write(  JSON.stringify(foundDocument) );
+                res.end();
+            }else{
+                countDocuments(function(count){
+                    var newDoc = {
+                        original_url: url,
+                        short_url: (count +1)
+                    }
+                    addDocument(newDoc);
+                //});
+                findDocumentByOriginalURL(url, function (foundDocument){
+                    if(foundDocument != null){
+                        console.log(foundDocument);
+                        res.write(  JSON.stringify(foundDocument) );
+                        res.end();            
+                    }else{
+                        res.write("Unable to add document");
+                        res.end();
+                    }
+                });
+                });
+            }
+        });
     }else{
         var message = "invalid url";
         console.error(message);
         res.write(message);
+        res.end();
     }
+
+});
+
+var rootUrlPath = "/";
+app.get((rootUrlPath), function(req, res){
+    res.write(`
+FreeCodeCamp API Basejump: URL Shortener Microservice
+User stories:
+I can pass a URL as a parameter and I will receive a shortened URL in the JSON response.
+When I visit that shortened URL, it will redirect me to my original link.
+Example creation usage:
+https://little-url.herokuapp.com/new/https://www.google.com
+https://little-url.herokuapp.com/new/http://foo.com:80
+Example creation output
+{ "original_url":"http://foo.com:80", "short_url":"https://little-url.herokuapp.com/8170" }
+Usage:
+https://little-url.herokuapp.com/2871
+Will redirect to:
+https://www.google.com/
+
+
+//url path > new/site
+https://little-url.herokuapp.com/new/https://www.google.com
+{"original_url":"https://www.google.com","short_url":"https://little-url.herokuapp.com/5576"}
+//url path > short url > redirects to th original url
+https://little-url.herokuapp.com/5576    
+    `);
     res.end();
 });
+
 
 var rootUrlPath = "/";
 app.get((rootUrlPath + "*"), function(req, res){
@@ -139,11 +203,7 @@ app.get((rootUrlPath + "*"), function(req, res){
             res.end();
         }
     });
-
-
-
 });
-
 
 
 app.listen(config.port, function(){

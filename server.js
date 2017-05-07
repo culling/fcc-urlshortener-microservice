@@ -29,6 +29,7 @@ https://little-url.herokuapp.com/new/https://www.google.com
 https://little-url.herokuapp.com/5576
 */
 
+//express
 var path    = require("path");
 var express = require("express");
 var app     = express();
@@ -72,7 +73,6 @@ function findDocumentByOriginalURL(original_url, callback ){
         {},
         function(err, foundDocument){
             if(err){console.error(err)};
-            //console.log(JSON.stringify(foundDocument));
             callback(foundDocument);
             db.close();            
         })
@@ -88,7 +88,6 @@ function findDocumentByShortURL(short_url, callback){
         }).toArray(
         function(err, documents){
             if(err){console.error(err)};
-            //console.log(JSON.stringify(documents));
             callback(documents);
             db.close();
         });
@@ -106,11 +105,9 @@ function countDocuments(callback){
             if(count == null){
                 count= 0;
             }
-            //console.log((count));
 
             callback(count);
             db.close();
-            //return count;
         });
     });
 }
@@ -119,7 +116,6 @@ function countDocuments(callback){
 
 var newUrlPath = "/new/";
 app.get( (newUrlPath + "*"), function(req, res){
-    //res.write("new page \n");
     var url = req.url.slice(newUrlPath.length);
 
     if((url.match("http://") ) || (url.match("https://") ) ){
@@ -127,7 +123,6 @@ app.get( (newUrlPath + "*"), function(req, res){
 
         findDocumentByOriginalURL(url, function (foundDocument){
             if(foundDocument != null){
-                //console.log(foundDocument);
                 res.write(  JSON.stringify(foundDocument) );
                 res.end();
             }else{
@@ -142,7 +137,6 @@ app.get( (newUrlPath + "*"), function(req, res){
                     //show the new document
                     findDocumentByOriginalURL(url, function (foundDocument){
                         if(foundDocument != null){
-                            //console.log(foundDocument);
                             res.write(  JSON.stringify(foundDocument) );
                             res.end();            
                         }else{
@@ -196,8 +190,6 @@ app.get((rootUrlPath + "*"), function(req, res){
     //console.log(short_url );
     findDocumentByShortURL(short_url, function(documents){
         if(documents.length > 0){
-            //console.log(documents[0]);
-            //res.write( JSON.stringify(documents[0]) );
 
             app.set('views', path.join(__dirname, 'server/templates' ))
             app.set('view engine', 'jade');
@@ -205,8 +197,6 @@ app.get((rootUrlPath + "*"), function(req, res){
             res.render('redirect', {redirectUrl: original_url });
 
 
-            //res.write("web server running");
-            //res.end();
         }else{
             console.log("no short url found");
             res.write("no short url found" );

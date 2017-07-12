@@ -4,6 +4,7 @@
   "description": "fcc url shortener microservice",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm install && bower install",
     "devmode": "nodemon ./server.js",
@@ -12,6 +13,7 @@
     "c9-run-mongo": "./mongod",
     "vsc-config-mongo": "mkdir data && echo 'mongod --bind_ip=$IP --dbpath=data --nojournal --rest \"$@\"'",
     "vsc-run-mongo": "mongod --port 27017 --dbpath=./data"
+
   },
   "author": "",
   "license": "ISC",

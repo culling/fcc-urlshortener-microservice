@@ -42,7 +42,7 @@ var mongoPort       = config.mongoPort;
 var mongoDatabase   = config.mongoDatabase;
 var mongoCollectionName = config.mongoCollectionName;
 console.log(mongoCollectionName);
-var mongoUrl =  `mongodb://localhost:${mongoPort}/${mongoDatabase}`;
+var mongoUrl =  `${config.mongoUrl}/${mongoDatabase}`;
 
 
 function addDocument(document){

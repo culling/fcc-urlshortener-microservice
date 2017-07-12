@@ -12,7 +12,8 @@
     "c9-config-mongo": "mkdir data && echo 'mongod --bind_ip=$IP --dbpath=data --nojournal --rest \"$@\"' > mongod && chmod a+x mongod",
     "c9-run-mongo": "./mongod",
     "vsc-config-mongo": "mkdir data && echo 'mongod --bind_ip=$IP --dbpath=data --nojournal --rest \"$@\"'",
-    "vsc-run-mongo": "mongod --port 27017 --dbpath=./data"
+    "vsc-run-mongo": "mongod --port 27017 --dbpath=./data",
+    "dev-heroku": "nf start -f Procfile_dev"
 
   },
   "author": "",
